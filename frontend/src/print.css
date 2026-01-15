@@ -1,0 +1,428 @@
+/* Professional Invoice Print Styles */
+
+/* No Print Class - hide elements during print */
+.no-print {
+    display: block;
+}
+
+@media print {
+
+    /* Page setup */
+    @page {
+        size: A4;
+        margin: 10mm 15mm;
+    }
+
+    /* Reset colors for accurate printing */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        filter: none !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    /* Pure white background */
+    html,
+    body {
+        background: white !important;
+        background-color: white !important;
+        color: black !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 11pt !important;
+        -webkit-filter: none !important;
+        filter: none !important;
+    }
+
+    /* Hide no-print elements */
+    .no-print,
+    .modal-header,
+    .modal-footer {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
+    /* Reset background for all containers */
+    #root,
+    #root>div,
+    main,
+    .animate-fade-in {
+        background: white !important;
+        background-color: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: auto !important;
+    }
+
+    /* Standard Modal Overrides for Print */
+    .modal-overlay {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        background: white !important;
+        height: auto !important;
+        background: white !important;
+        display: block !important;
+        padding: 0 !important;
+        z-index: auto !important;
+    }
+
+    .modal {
+        position: static !important;
+        background: white !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+        width: 100% !important;
+    }
+
+    .modal-body {
+        padding: 0 !important;
+    }
+
+    /* Hide sidebar completely */
+    aside {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        position: absolute !important;
+        left: -9999px !important;
+    }
+
+    /* Hide header */
+    header {
+        display: none !important;
+    }
+
+    /* Hide all buttons */
+    button,
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-ghost,
+    .btn-success,
+    .btn-danger,
+    [class*="btn-"] {
+        display: none !important;
+    }
+
+    /* Hide links styled as buttons */
+    a.btn-ghost,
+    a.btn-icon,
+    a[class*="btn"] {
+        display: none !important;
+    }
+
+    /* Remove all margins from main content */
+    main {
+        margin: 0 !important;
+        margin-left: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        background: white !important;
+    }
+
+    /* Remove margin-left from flex containers */
+    [class*="ml-64"],
+    [class*="ml-20"],
+    div[class*="ml-"] {
+        margin-left: 0 !important;
+    }
+
+    /* Container max-width */
+    .max-w-4xl {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Remove vertical spacing */
+    .space-y-6>*+* {
+        margin-top: 0 !important;
+    }
+
+    /* The Invoice Card - MAIN PRINT TARGET */
+    #invoice-print {
+        display: block !important;
+        visibility: visible !important;
+        background: white !important;
+        background-color: white !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        page-break-inside: avoid;
+    }
+
+    /* All text inside invoice - pure black */
+    #invoice-print,
+    #invoice-print *,
+    #invoice-print h1,
+    #invoice-print h2,
+    #invoice-print h3,
+    #invoice-print h4,
+    #invoice-print p,
+    #invoice-print span,
+    #invoice-print td,
+    #invoice-print th,
+    #invoice-print div {
+        color: black !important;
+        background: white !important;
+        background-color: white !important;
+    }
+
+    /* Label text - slightly gray */
+    #invoice-print .text-dark-300,
+    #invoice-print .text-dark-400 {
+        color: #444 !important;
+    }
+
+    /* Bold text */
+    #invoice-print .text-white,
+    #invoice-print .font-bold,
+    #invoice-print .font-semibold {
+        color: black !important;
+    }
+
+    /* Colored amounts for visibility */
+    #invoice-print .text-primary-400 {
+        color: #0066cc !important;
+    }
+
+    #invoice-print .text-emerald-400 {
+        color: #059669 !important;
+    }
+
+    #invoice-print .text-amber-400 {
+        color: #b45309 !important;
+    }
+
+    #invoice-print .text-red-400 {
+        color: #dc2626 !important;
+    }
+
+    /* Tables - clean borders */
+    #invoice-print .table-container {
+        border: 1px solid #ccc !important;
+        border-radius: 0 !important;
+        overflow: visible !important;
+        background: white !important;
+    }
+
+    #invoice-print .table {
+        width: 100% !important;
+        background: white !important;
+        border-collapse: collapse !important;
+    }
+
+    #invoice-print .table th {
+        background: #f0f0f0 !important;
+        background-color: #f0f0f0 !important;
+        color: #333 !important;
+        border-bottom: 2px solid #999 !important;
+        padding: 8px 10px !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        font-size: 9pt !important;
+    }
+
+    #invoice-print .table td {
+        border-top: 1px solid #ddd !important;
+        color: #333 !important;
+        padding: 8px 10px !important;
+        background: white !important;
+        font-size: 10pt !important;
+    }
+
+    #invoice-print .table tbody tr {
+        background: white !important;
+    }
+
+    /* Borders inside invoice */
+    #invoice-print .border-b,
+    #invoice-print .border-t,
+    #invoice-print [class*="border-dark"] {
+        border-color: #ccc !important;
+    }
+
+    /* Remove any dark backgrounds */
+    #invoice-print [class*="bg-dark"],
+    #invoice-print [class*="bg-emerald"],
+    #invoice-print .rounded-lg,
+    #invoice-print .rounded-xl {
+        background: white !important;
+        background-color: white !important;
+    }
+
+    /* Hide icons */
+    #invoice-print svg,
+    #invoice-print .lucide {
+        display: none !important;
+    }
+
+    /* Payment history */
+    #invoice-print .space-y-2>div {
+        background: #fafafa !important;
+        border: 1px solid #ddd !important;
+        border-radius: 0 !important;
+    }
+
+    /* Hide status badge in print */
+    #invoice-print .badge {
+        display: none !important;
+    }
+
+    /* Totals section width */
+    #invoice-print .w-72 {
+        width: 220px !important;
+    }
+
+    /* Monospace for numbers */
+    #invoice-print .font-mono {
+        font-family: 'Courier New', Courier, monospace !important;
+    }
+
+    /* Job Card Receipt Styles */
+    #job-receipt {
+        display: block !important;
+        visibility: visible !important;
+        background: white !important;
+        border: none !important;
+        padding: 0 !important;
+    }
+
+    #job-receipt * {
+        color: black !important;
+        background: white !important;
+    }
+
+    /* POS Receipt Styles */
+    #pos-receipt {
+        display: block !important;
+        visibility: visible !important;
+        width: 80mm !important;
+        margin: 0 auto !important;
+        padding: 5mm !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        font-size: 10pt !important;
+    }
+
+    #pos-receipt * {
+        color: black !important;
+        background: white !important;
+    }
+
+    .receipt-container {
+        width: 100% !important;
+    }
+
+    .receipt-header {
+        text-align: center;
+        margin-bottom: 5mm;
+    }
+
+    .receipt-header h1 {
+        font-size: 14pt !important;
+        margin: 0 0 2mm 0 !important;
+        font-weight: bold !important;
+    }
+
+    .receipt-header p {
+        margin: 0 !important;
+        font-size: 9pt !important;
+    }
+
+    .receipt-divider {
+        border-bottom: 1pt dashed #000 !important;
+        margin: 3mm 0 !important;
+        height: 0 !important;
+        width: 100% !important;
+    }
+
+    .receipt-info p {
+        margin: 1mm 0 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        font-size: 9pt !important;
+    }
+
+    .receipt-info p span {
+        font-weight: bold !important;
+    }
+
+    .receipt-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        margin: 3mm 0 !important;
+    }
+
+    .receipt-table th {
+        border-bottom: 1pt solid #000 !important;
+        padding-bottom: 1mm !important;
+        font-size: 9pt !important;
+        font-weight: bold !important;
+    }
+
+    .receipt-table td {
+        padding: 2mm 0 !important;
+        vertical-align: top !important;
+        font-size: 9pt !important;
+        border-bottom: 0.5pt solid #eee !important;
+    }
+
+    .receipt-table td small {
+        font-size: 8pt !important;
+        color: #333 !important;
+    }
+
+    .receipt-totals {
+        margin-top: 3mm !important;
+        font-size: 9pt !important;
+    }
+
+    .receipt-totals .flex {
+        display: flex !important;
+        justify-content: space-between !important;
+        margin-bottom: 1mm !important;
+    }
+
+    .receipt-footer {
+        text-align: center;
+        margin-top: 5mm !important;
+        font-size: 8pt !important;
+    }
+
+    .receipt-footer p {
+        margin: 1mm 0 !important;
+    }
+}
+
+/* Screen-only utility - hide when printing */
+@media screen {
+    .print-only {
+        position: absolute !important;
+        left: -9999px !important;
+        top: -9999px !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        width: 80mm !important;
+        /* Fix width for receipt capture */
+        overflow: hidden !important;
+    }
+}
+
+@media print {
+    .print-only {
+        display: block !important;
+    }
+}
