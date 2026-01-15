@@ -156,6 +156,7 @@ export const reportsAPI = {
     getInventory: () => api.get('/reports/inventory'),
     getJobProfitability: (params) => api.get('/reports/job-profitability', { params }),
     getDailyUsage: (params) => api.get('/reports/daily-usage', { params }),
+    getGST: (params) => api.get('/reports/gst', { params }),
 };
 
 // Settings API

@@ -9,6 +9,10 @@ import {
     AlertTriangle,
     Loader2,
     Calendar,
+    Receipt,
+    Printer,
+    Download,
+    FileText,
 } from 'lucide-react';
 import { reportsAPI } from '../lib/api';
 import { formatCurrency, formatNumber, formatDate } from '../lib/utils';
@@ -18,6 +22,7 @@ const reportTypes = [
     { id: 'inventory', label: 'Inventory Report', icon: Package },
     { id: 'profitability', label: 'Job Profitability', icon: DollarSign },
     { id: 'usage', label: 'Daily Usage', icon: Wrench },
+    { id: 'gst', label: 'MIRA GST Report', icon: Receipt },
 ];
 
 export default function Reports() {
@@ -43,8 +48,8 @@ export default function Reports() {
                         key={report.id}
                         onClick={() => setActiveReport(report.id)}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${activeReport === report.id
-                                ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30'
-                                : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
+                            ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30'
+                            : 'bg-dark-800 text-dark-300 hover:bg-dark-700'
                             }`}
                     >
                         <report.icon className="w-4 h-4" />
@@ -54,7 +59,7 @@ export default function Reports() {
             </div>
 
             {/* Date Range (for applicable reports) */}
-            {['sales', 'profitability', 'usage'].includes(activeReport) && (
+            {['sales', 'profitability', 'usage', 'gst'].includes(activeReport) && (
                 <div className="card p-4">
                     <div className="flex items-center gap-4">
                         <Calendar className="w-5 h-5 text-dark-400" />
@@ -82,6 +87,7 @@ export default function Reports() {
             {activeReport === 'inventory' && <InventoryReport />}
             {activeReport === 'profitability' && <ProfitabilityReport dateRange={dateRange} />}
             {activeReport === 'usage' && <UsageReport dateRange={dateRange} />}
+            {activeReport === 'gst' && <GSTReport dateRange={dateRange} />}
         </div>
     );
 }
@@ -419,6 +425,272 @@ function UsageReport({ dateRange }) {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function GSTReport({ dateRange }) {
+    const { data, isLoading } = useQuery({
+        queryKey: ['report-gst', dateRange],
+        queryFn: () => reportsAPI.getGST(dateRange).then((r) => r.data),
+    });
+
+    if (isLoading) {
+        return <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary-500" /></div>;
+    }
+
+    const handlePrint = () => {
+        window.print();
+    };
+
+    return (
+        <div className="space-y-6">
+            {/* Header with Print Button */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-xl font-bold text-white">MIRA GST Return (Form 205)</h2>
+                    <p className="text-sm text-dark-400">
+                        Period: {formatDate(data?.taxpayerInfo?.taxablePeriod?.from)} - {formatDate(data?.taxpayerInfo?.taxablePeriod?.to)}
+                    </p>
+                </div>
+                <button onClick={handlePrint} className="btn-primary">
+                    <Printer className="w-4 h-4" />
+                    Print Report
+                </button>
+            </div>
+
+            {/* Taxpayer Information */}
+            <div className="card p-6">
+                <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-primary-400" />
+                    Taxpayer Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <p className="text-xs text-dark-400 uppercase">Business Name</p>
+                        <p className="text-white font-medium">{data?.taxpayerInfo?.businessName || 'Not configured'}</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-dark-400 uppercase">GST TIN</p>
+                        <p className="text-white font-medium font-mono">{data?.taxpayerInfo?.gstTin || 'Not configured'}</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-dark-400 uppercase">Taxable Activity No.</p>
+                        <p className="text-white font-medium font-mono">{data?.taxpayerInfo?.taxableActivityNo || 'Not configured'}</p>
+                    </div>
+                </div>
+                <p className="text-xs text-amber-400 mt-4">* Configure these in Settings if not set</p>
+            </div>
+
+            {/* Main GST Summary - For MIRA Form */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Output Tax (Sales) */}
+                <div className="card p-6 border-l-4 border-primary-500">
+                    <h4 className="text-xs uppercase text-dark-400 mb-3">Output Tax (Box 1-3)</h4>
+                    <div className="space-y-3">
+                        <div>
+                            <p className="text-xs text-dark-400">Total Sales (Incl. GST)</p>
+                            <p className="text-2xl font-bold text-white">{formatCurrency(data?.outputTax?.totalSalesInclusive)}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-dark-400">Total Sales (Excl. GST)</p>
+                            <p className="text-lg text-dark-300">{formatCurrency(data?.outputTax?.totalSalesExclusive)}</p>
+                        </div>
+                        <div className="pt-2 border-t border-dark-700">
+                            <p className="text-xs text-dark-400">GST Collected ({data?.gstRate}%)</p>
+                            <p className="text-xl font-bold text-primary-400">{formatCurrency(data?.outputTax?.gstCollected)}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Input Tax (Purchases) */}
+                <div className="card p-6 border-l-4 border-emerald-500">
+                    <h4 className="text-xs uppercase text-dark-400 mb-3">Input Tax (Box 4-6)</h4>
+                    <div className="space-y-3">
+                        <div>
+                            <p className="text-xs text-dark-400">Total Purchases (Excl. GST)</p>
+                            <p className="text-2xl font-bold text-white">{formatCurrency(data?.inputTax?.totalPurchasesExclusive)}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-dark-400">Purchase Transactions</p>
+                            <p className="text-lg text-dark-300">{data?.inputTax?.purchaseCount}</p>
+                        </div>
+                        <div className="pt-2 border-t border-dark-700">
+                            <p className="text-xs text-dark-400">GST Paid (Estimated)</p>
+                            <p className="text-xl font-bold text-emerald-400">{formatCurrency(data?.inputTax?.gstPaid)}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Net GST Payable */}
+                <div className={`card p-6 border-l-4 ${data?.netGst?.netPayable >= 0 ? 'border-red-500' : 'border-emerald-500'}`}>
+                    <h4 className="text-xs uppercase text-dark-400 mb-3">Net GST (Box 7)</h4>
+                    <div className="space-y-3">
+                        <div className="flex justify-between">
+                            <span className="text-dark-400">Output Tax</span>
+                            <span className="text-white">{formatCurrency(data?.netGst?.outputTax)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-dark-400">Input Tax</span>
+                            <span className="text-white">- {formatCurrency(data?.netGst?.inputTax)}</span>
+                        </div>
+                        <div className="pt-3 border-t border-dark-700">
+                            <p className="text-xs text-dark-400 uppercase">Amount {data?.netGst?.status}</p>
+                            <p className={`text-3xl font-bold ${data?.netGst?.netPayable >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                                {formatCurrency(Math.abs(data?.netGst?.netPayable))}
+                            </p>
+                            <p className={`text-sm mt-1 ${data?.netGst?.netPayable >= 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                                {data?.netGst?.status === 'PAYABLE' ? '↑ To be paid to MIRA' : '↓ Refundable from MIRA'}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Sales Breakdown */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="card p-6">
+                    <h3 className="font-semibold text-white mb-4">Sales Breakdown by Type</h3>
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center p-3 bg-dark-800/50 rounded-lg">
+                            <span className="text-dark-300">Parts & Products</span>
+                            <span className="text-white font-medium">{formatCurrency(data?.salesByType?.parts)}</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-dark-800/50 rounded-lg">
+                            <span className="text-dark-300">Services</span>
+                            <span className="text-white font-medium">{formatCurrency(data?.salesByType?.services)}</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-dark-800/50 rounded-lg">
+                            <span className="text-dark-300">Labor & Other</span>
+                            <span className="text-white font-medium">{formatCurrency(data?.salesByType?.labor)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="card p-6">
+                    <h3 className="font-semibold text-white mb-4">Sales Breakdown by Source</h3>
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center p-3 bg-dark-800/50 rounded-lg">
+                            <div>
+                                <span className="text-dark-300">POS Sales</span>
+                                <p className="text-xs text-dark-400">{data?.outputTax?.posSales?.count} transactions</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-white font-medium">{formatCurrency(data?.outputTax?.posSales?.inclusive)}</p>
+                                <p className="text-xs text-primary-400">GST: {formatCurrency(data?.outputTax?.posSales?.gst)}</p>
+                            </div>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-dark-800/50 rounded-lg">
+                            <div>
+                                <span className="text-dark-300">Job Card Invoices</span>
+                                <p className="text-xs text-dark-400">{data?.outputTax?.invoices?.count} invoices</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-white font-medium">{formatCurrency(data?.outputTax?.invoices?.inclusive)}</p>
+                                <p className="text-xs text-primary-400">GST: {formatCurrency(data?.outputTax?.invoices?.gst)}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Monthly Breakdown */}
+            {data?.monthlySales?.length > 0 && (
+                <div className="card">
+                    <div className="p-4 border-b border-dark-700/50">
+                        <h3 className="font-semibold text-white">Monthly Breakdown</h3>
+                    </div>
+                    <div className="table-container">
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th className="text-right">POS Sales</th>
+                                    <th className="text-right">Invoice Sales</th>
+                                    <th className="text-right">Total Sales</th>
+                                    <th className="text-right">Total GST</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.monthlySales.map((month, idx) => (
+                                    <tr key={idx}>
+                                        <td className="text-white">{month.month}</td>
+                                        <td className="text-right font-mono">{formatCurrency(month.posTotal)}</td>
+                                        <td className="text-right font-mono">{formatCurrency(month.invoiceTotal)}</td>
+                                        <td className="text-right font-mono text-white">{formatCurrency(month.totalSales)}</td>
+                                        <td className="text-right font-mono text-primary-400">{formatCurrency(month.totalGst)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Transaction Details */}
+            {data?.transactions?.length > 0 && (
+                <div className="card">
+                    <div className="p-4 border-b border-dark-700/50 flex justify-between items-center">
+                        <h3 className="font-semibold text-white">Transaction Details</h3>
+                        <span className="text-sm text-dark-400">{data.transactions.length} transactions</span>
+                    </div>
+                    <div className="table-container max-h-96 overflow-y-auto">
+                        <table className="table">
+                            <thead className="sticky top-0 bg-dark-900">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Reference</th>
+                                    <th>Description</th>
+                                    <th className="text-right">Gross</th>
+                                    <th className="text-right">GST</th>
+                                    <th className="text-right">Net</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {data.transactions.map((tx, idx) => (
+                                    <tr key={idx}>
+                                        <td className="text-dark-300">{formatDate(tx.date)}</td>
+                                        <td>
+                                            <span className={`badge ${tx.type === 'POS Sale' ? 'badge-success' : 'badge-primary'}`}>
+                                                {tx.type}
+                                            </span>
+                                        </td>
+                                        <td className="text-primary-400 font-mono text-xs">{tx.reference}</td>
+                                        <td className="text-dark-300 text-sm">{tx.description}</td>
+                                        <td className="text-right font-mono text-white">{formatCurrency(tx.grossAmount)}</td>
+                                        <td className="text-right font-mono text-primary-400">{formatCurrency(tx.gstAmount)}</td>
+                                        <td className="text-right font-mono text-dark-300">{formatCurrency(tx.netAmount)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* Summary Stats */}
+            <div className="card p-6 bg-gradient-to-r from-primary-500/10 to-purple-500/10 border border-primary-500/20">
+                <h3 className="font-semibold text-white mb-4">Summary Statistics</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <p className="text-xs text-dark-400">Total Transactions</p>
+                        <p className="text-xl font-bold text-white">{data?.summary?.totalTransactions}</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-dark-400">Total Revenue</p>
+                        <p className="text-xl font-bold text-white">{formatCurrency(data?.summary?.totalRevenue)}</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-dark-400">Total GST Collected</p>
+                        <p className="text-xl font-bold text-primary-400">{formatCurrency(data?.summary?.totalGstCollected)}</p>
+                    </div>
+                    <div>
+                        <p className="text-xs text-dark-400">Avg Transaction</p>
+                        <p className="text-xl font-bold text-white">{formatCurrency(data?.summary?.avgTransactionValue)}</p>
                     </div>
                 </div>
             </div>

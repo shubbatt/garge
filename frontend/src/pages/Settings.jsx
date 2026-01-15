@@ -7,6 +7,7 @@ import {
     DollarSign,
     Save,
     Loader2,
+    Receipt,
 } from 'lucide-react';
 import { settingsAPI } from '../lib/api';
 
@@ -162,6 +163,60 @@ export default function Settings() {
                                 value={formData?.currency_symbol || ''}
                                 onChange={(e) => setFormData({ ...formData, currency_symbol: e.target.value })}
                             />
+                        </div>
+                    </div>
+                </div>
+
+                {/* MIRA GST Settings */}
+                <div className="card">
+                    <div className="p-4 border-b border-dark-700/50 flex items-center gap-3">
+                        <Receipt className="w-5 h-5 text-amber-400" />
+                        <div>
+                            <h3 className="font-semibold text-white">MIRA GST Registration</h3>
+                            <p className="text-xs text-dark-400">For GST return filing (Form 205)</p>
+                        </div>
+                    </div>
+                    <div className="p-6 space-y-4">
+                        <div>
+                            <label className="label">Business Name (as per GST Certificate)</label>
+                            <input
+                                type="text"
+                                className="input"
+                                placeholder="Your registered business name"
+                                value={formData?.business_name || ''}
+                                onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="label">GST TIN</label>
+                                <input
+                                    type="text"
+                                    className="input font-mono"
+                                    placeholder="e.g., 1234567GST101"
+                                    value={formData?.gst_tin || ''}
+                                    onChange={(e) => setFormData({ ...formData, gst_tin: e.target.value })}
+                                />
+                                <p className="text-xs text-dark-400 mt-1">Taxpayer Identification Number</p>
+                            </div>
+                            <div>
+                                <label className="label">Taxable Activity Number</label>
+                                <input
+                                    type="text"
+                                    className="input font-mono"
+                                    placeholder="e.g., TAM-00001"
+                                    value={formData?.taxable_activity_number || ''}
+                                    onChange={(e) => setFormData({ ...formData, taxable_activity_number: e.target.value })}
+                                />
+                                <p className="text-xs text-dark-400 mt-1">As per GST Registration Certificate</p>
+                            </div>
+                        </div>
+
+                        <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                            <p className="text-sm text-amber-400">
+                                💡 These details will appear on your GST reports for easy filing with MIRA.
+                            </p>
                         </div>
                     </div>
                 </div>
