@@ -12,7 +12,7 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-// Routes
+// Routes - with /api prefix (for local development)
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/inventory', require('./routes/inventory'));
@@ -28,6 +28,23 @@ app.use('/api/daily-usage', require('./routes/dailyUsage'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/dashboard', require('./routes/dashboard'));
+
+// Routes - without /api prefix (for DigitalOcean App Platform path stripping)
+app.use('/auth', require('./routes/auth'));
+app.use('/users', require('./routes/users'));
+app.use('/inventory', require('./routes/inventory'));
+app.use('/categories', require('./routes/categories'));
+app.use('/customers', require('./routes/customers'));
+app.use('/vehicles', require('./routes/vehicles'));
+app.use('/services', require('./routes/services'));
+app.use('/service-categories', require('./routes/serviceCategories'));
+app.use('/job-cards', require('./routes/jobCards'));
+app.use('/pos', require('./routes/pos'));
+app.use('/invoices', require('./routes/invoices'));
+app.use('/daily-usage', require('./routes/dailyUsage'));
+app.use('/reports', require('./routes/reports'));
+app.use('/settings', require('./routes/settings'));
+app.use('/dashboard', require('./routes/dashboard'));
 
 // Root route
 app.get('/', (req, res) => {
@@ -45,6 +62,9 @@ app.get('/', (req, res) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
