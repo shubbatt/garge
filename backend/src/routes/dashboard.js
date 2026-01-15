@@ -54,11 +54,12 @@ router.get('/', async (req, res) => {
         });
         const pendingAmount = pendingInvoices.reduce((sum, i) => sum + (i.total - i.paidAmount), 0);
 
-        // Low stock items
-        const lowStockItems = await prisma.$queryRaw`
-      SELECT COUNT(*) as count FROM InventoryItem 
-      WHERE currentStock <= reorderLevel AND isActive = true
-    `;
+        // Low stock items - fetch all active items and count those with low stock
+        const allActiveItems = await prisma.inventoryItem.findMany({
+            where: { isActive: true },
+            select: { currentStock: true, reorderLevel: true }
+        });
+        const lowStockCount = allActiveItems.filter(item => item.currentStock <= item.reorderLevel).length;
 
         // Recent job cards
         const recentJobs = await prisma.jobCard.findMany({
@@ -100,7 +101,7 @@ router.get('/', async (req, res) => {
                 pendingInvoiceCount: pendingInvoices.length
             },
             inventory: {
-                lowStockCount: Number(lowStockItems[0]?.count || 0)
+                lowStockCount
             },
             recentJobs,
             recentSales

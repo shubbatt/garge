@@ -14,9 +14,9 @@ router.get('/', async (req, res) => {
 
         if (search) {
             where.OR = [
-                { name: { contains: search } },
-                { sku: { contains: search } },
-                { barcode: { contains: search } }
+                { name: { contains: search, mode: 'insensitive' } },
+                { sku: { contains: search, mode: 'insensitive' } },
+                { barcode: { contains: search, mode: 'insensitive' } }
             ];
         }
 
@@ -24,19 +24,20 @@ router.get('/', async (req, res) => {
             where.categoryId = categoryId;
         }
 
-        if (lowStock === 'true') {
-            where.currentStock = { lte: prisma.inventoryItem.fields.reorderLevel };
-        }
-
         if (active !== undefined) {
             where.isActive = active === 'true';
         }
 
-        const items = await prisma.inventoryItem.findMany({
+        let items = await prisma.inventoryItem.findMany({
             where,
             include: { category: true },
             orderBy: { name: 'asc' }
         });
+
+        // Filter low stock items in JS since Prisma can't compare two columns
+        if (lowStock === 'true') {
+            items = items.filter(item => item.currentStock <= item.reorderLevel);
+        }
 
         res.json(items);
     } catch (error) {
@@ -47,14 +48,21 @@ router.get('/', async (req, res) => {
 // Get low stock items
 router.get('/low-stock', async (req, res) => {
     try {
-        const items = await prisma.$queryRaw`
-      SELECT i.*, c.name as categoryName 
-      FROM InventoryItem i 
-      LEFT JOIN Category c ON i.categoryId = c.id 
-      WHERE i.currentStock <= i.reorderLevel AND i.isActive = true
-      ORDER BY i.currentStock ASC
-    `;
-        res.json(items);
+        const items = await prisma.inventoryItem.findMany({
+            where: { isActive: true },
+            include: { category: true },
+            orderBy: { currentStock: 'asc' }
+        });
+
+        // Filter items where currentStock <= reorderLevel
+        const lowStockItems = items
+            .filter(item => item.currentStock <= item.reorderLevel)
+            .map(item => ({
+                ...item,
+                categoryName: item.category?.name
+            }));
+
+        res.json(lowStockItems);
     } catch (error) {
         res.status(500).json({ error: { message: error.message } });
     }
