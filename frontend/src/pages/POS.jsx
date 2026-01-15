@@ -16,7 +16,7 @@ import {
     History,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { inventoryAPI, posAPI } from '../lib/api';
+import { inventoryAPI, posAPI, settingsAPI } from '../lib/api';
 import { usePOSStore, useAuthStore } from '../lib/store';
 import { formatCurrency, formatDate, formatDateTime } from '../lib/utils';
 
@@ -40,6 +40,12 @@ export default function POS() {
         queryFn: () => posAPI.getTodaySummary().then((r) => r.data),
     });
 
+    // Fetch settings to get tax rate
+    const { data: settings } = useQuery({
+        queryKey: ['settings'],
+        queryFn: () => settingsAPI.getAll().then((r) => r.data),
+    });
+
     const barcodeMutation = useMutation({
         mutationFn: (code) => inventoryAPI.getByBarcode(code),
         onSuccess: (response) => {
@@ -61,7 +67,8 @@ export default function POS() {
     };
 
     const subtotal = getSubtotal();
-    const taxRate = 5;
+    // Get tax rate from settings, default to 5 if not set
+    const taxRate = parseFloat(settings?.tax_rate) || 5;
     const taxAmount = Math.round(subtotal * (taxRate / 100) * 100) / 100;
     const total = Math.round((subtotal + taxAmount) * 100) / 100;
 

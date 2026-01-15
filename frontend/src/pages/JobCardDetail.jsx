@@ -28,7 +28,7 @@ import {
     Globe,
     Activity,
 } from 'lucide-react';
-import { jobCardsAPI, servicesAPI, inventoryAPI, invoicesAPI, usersAPI } from '../lib/api';
+import { jobCardsAPI, servicesAPI, inventoryAPI, invoicesAPI, usersAPI, settingsAPI } from '../lib/api';
 import { formatCurrency, formatDateTime, formatDate, getStatusColor, getStatusLabel } from '../lib/utils';
 
 const statusFlow = ['pending', 'in_progress', 'quality_check', 'ready', 'invoiced', 'paid'];
@@ -56,6 +56,12 @@ export default function JobCardDetail() {
         queryFn: () => usersAPI.getAll().then((r) => r.data),
     });
 
+    // Fetch settings to get tax rate
+    const { data: settings } = useQuery({
+        queryKey: ['settings'],
+        queryFn: () => settingsAPI.getAll().then((r) => r.data),
+    });
+
     const assignTechnicianMutation = useMutation({
         mutationFn: (assignedToId) => jobCardsAPI.update(id, { assignedToId }),
         onSuccess: () => {
@@ -78,8 +84,11 @@ export default function JobCardDetail() {
         },
     });
 
+    // Get tax rate from settings, default to 5 if not set
+    const taxRate = parseFloat(settings?.tax_rate) || 5;
+
     const createInvoiceMutation = useMutation({
-        mutationFn: () => invoicesAPI.create({ jobCardId: id, taxRate: 5 }),
+        mutationFn: () => invoicesAPI.create({ jobCardId: id, taxRate }),
         onSuccess: (response) => {
             queryClient.invalidateQueries(['job-card', id]);
             toast.success('Invoice created');
